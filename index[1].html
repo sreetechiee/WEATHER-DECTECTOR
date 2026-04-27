@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atmos — Weather Dashboard</title>
+
+  <!-- Google Fonts: Clash Display for headings, DM Sans for body -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CDN (utility helpers) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Custom design-system config for Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Syne', 'sans-serif'],
+            body:    ['DM Sans', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ░░ AMBIENT BACKGROUND ORBS ░░ -->
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
+  <div class="orb orb-3" aria-hidden="true"></div>
+
+  <!-- ░░ APP WRAPPER ░░ -->
+  <main class="app-wrapper" role="main">
+
+    <!-- ── HEADER / BRANDING ── -->
+    <header class="app-header fade-in">
+      <span class="brand font-display">Atmos</span>
+      <p class="brand-sub font-body">Real-time Weather Intelligence</p>
+    </header>
+
+    <!-- ── SEARCH SECTION ── -->
+    <section class="search-section fade-in" aria-label="City search">
+      <div class="search-glass">
+        <!-- SVG search icon -->
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          id="city-input"
+          class="search-input font-body"
+          type="text"
+          placeholder="Search city…"
+          aria-label="Enter city name"
+          autocomplete="off"
+        />
+        <button id="search-btn" class="search-btn font-body" aria-label="Get weather">
+          Go
+        </button>
+      </div>
+      <!-- Inline error message -->
+      <p id="error-msg" class="error-msg font-body" role="alert" aria-live="polite"></p>
+    </section>
+
+    <!-- ── MAIN WEATHER CARD ── -->
+    <section id="weather-main" class="weather-main glass-card slide-up" aria-label="Current weather" hidden>
+
+      <div class="main-left">
+        <!-- City & date rendered by JS -->
+        <h2 id="city-name"   class="city-name  font-display"></h2>
+        <p  id="weather-date" class="weather-date font-body"></p>
+
+        <div class="temp-row">
+          <span id="temperature" class="temperature font-display"></span>
+          <div class="condition-block">
+            <img id="weather-icon" class="weather-icon" src="" alt="" />
+            <span id="condition" class="condition font-body"></span>
+          </div>
+        </div>
+
+        <p id="feels-like" class="feels-like font-body"></p>
+      </div>
+
+      <div class="main-right">
+        <!-- Decorative large emoji rendered by JS -->
+        <div id="deco-emoji" class="deco-emoji" aria-hidden="true"></div>
+      </div>
+
+    </section>
+
+    <!-- ── METRIC CARDS (Humidity · Wind · UV) ── -->
+    <section id="metrics-grid" class="metrics-grid" aria-label="Weather metrics" hidden>
+
+      <!-- Humidity Card -->
+      <article class="metric-card glass-card slide-up" style="animation-delay:.10s">
+        <div class="metric-icon-wrap metric-icon--blue" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+          </svg>
+        </div>
+        <div class="metric-body">
+          <span class="metric-label font-body">Humidity</span>
+          <span id="humidity"  class="metric-value font-display"></span>
+        </div>
+        <!-- Animated fill bar -->
+        <div class="fill-bar-track" aria-hidden="true">
+          <div id="humidity-bar" class="fill-bar fill-bar--blue"></div>
+        </div>
+      </article>
+
+      <!-- Wind Speed Card -->
+      <article class="metric-card glass-card slide-up" style="animation-delay:.22s">
+        <div class="metric-icon-wrap metric-icon--green" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/>
+            <path d="M9.6 4.6A2 2 0 1 1 11 8H2"/>
+            <path d="M12.6 19.4A2 2 0 1 0 14 16H2"/>
+          </svg>
+        </div>
+        <div class="metric-body">
+          <span class="metric-label font-body">Wind Speed</span>
+          <span id="wind-speed" class="metric-value font-display"></span>
+        </div>
+        <div class="fill-bar-track" aria-hidden="true">
+          <div id="wind-bar" class="fill-bar fill-bar--green"></div>
+        </div>
+      </article>
+
+      <!-- UV Index Card -->
+      <article class="metric-card glass-card slide-up" style="animation-delay:.34s">
+        <div class="metric-icon-wrap metric-icon--amber" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1"  x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22"  x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1"  y1="12" x2="3"  y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </div>
+        <div class="metric-body">
+          <span class="metric-label font-body">UV Index</span>
+          <span id="uv-index"   class="metric-value font-display"></span>
+        </div>
+        <div class="fill-bar-track" aria-hidden="true">
+          <div id="uv-bar" class="fill-bar fill-bar--amber"></div>
+        </div>
+      </article>
+
+    </section>
+
+    <!-- ── LOADING SPINNER ── -->
+    <div id="loader" class="loader" aria-label="Loading weather data" hidden>
+      <div class="spinner"></div>
+    </div>
+
+    <!-- ── FOOTER ── -->
+    <footer class="app-footer font-body fade-in">
+      Powered by OpenWeatherMap &nbsp;·&nbsp; Built for Cognizant Interview Demo
+    </footer>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

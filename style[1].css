@@ -1,0 +1,422 @@
+/* ============================================================
+   style.css — Atmos Weather Dashboard
+   Design: Dark Glassmorphism with animated depth orbs
+   Author: Interview Demo Build
+   ============================================================ */
+
+/* ── 1. DESIGN TOKENS ───────────────────────────────────────── */
+:root {
+  /* Palette */
+  --clr-bg:          #080b14;        /* deep navy-black canvas */
+  --clr-surface:     rgba(255,255,255,0.06);
+  --clr-border:      rgba(255,255,255,0.10);
+  --clr-text-hi:     #f0f4ff;
+  --clr-text-lo:     rgba(200,210,240,0.55);
+  --clr-accent-blue: #4f9eff;
+  --clr-accent-cyan: #00e5ff;
+  --clr-accent-green:#4fffb0;
+  --clr-accent-amber:#ffcc00;
+  --clr-accent-rose: #ff6b8a;
+
+  /* Typography scale */
+  --fs-xs:   .75rem;
+  --fs-sm:   .875rem;
+  --fs-base: 1rem;
+  --fs-lg:   1.25rem;
+  --fs-xl:   1.5rem;
+  --fs-2xl:  2rem;
+  --fs-temp: clamp(4rem, 10vw, 6.5rem);
+
+  /* Spacing */
+  --gap-sm:  .75rem;
+  --gap-md:  1.25rem;
+  --gap-lg:  2rem;
+
+  /* Glass recipe */
+  --glass-blur:    18px;
+  --glass-sat:     150%;
+  --glass-radius:  1.5rem;
+  --glass-shadow:  0 8px 32px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+/* ── 2. GLOBAL RESET ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  min-height: 100dvh;
+  background-color: var(--clr-bg);
+  color: var(--clr-text-hi);
+  font-family: 'DM Sans', sans-serif;
+  font-size: var(--fs-base);
+  overflow-x: hidden;
+  /* Subtle noise grain overlay for texture depth */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+}
+
+/* ── 3. AMBIENT DEPTH ORBS ───────────────────────────────────── */
+/*
+  Large blurred radial blobs behind everything create the
+  atmospheric "environment" that glassmorphism panels float in.
+*/
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: .45;
+  pointer-events: none;
+  z-index: 0;
+  animation: drift 18s ease-in-out infinite alternate;
+}
+.orb-1 {
+  width: 520px; height: 520px;
+  background: radial-gradient(circle, #1a4fff 0%, transparent 70%);
+  top: -180px; left: -150px;
+  animation-duration: 20s;
+}
+.orb-2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, #00c6ff 0%, transparent 70%);
+  bottom: -100px; right: -100px;
+  animation-duration: 15s;
+  animation-delay: -6s;
+}
+.orb-3 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, #a855f7 0%, transparent 70%);
+  top: 45%; left: 55%;
+  animation-duration: 25s;
+  animation-delay: -12s;
+}
+
+@keyframes drift {
+  from { transform: translate(0, 0)   scale(1);    }
+  to   { transform: translate(30px, 20px) scale(1.1); }
+}
+
+/* ── 4. APP LAYOUT ───────────────────────────────────────────── */
+.app-wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 860px;
+  margin-inline: auto;
+  padding: clamp(1.5rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem) 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+}
+
+/* ── 5. HEADER ───────────────────────────────────────────────── */
+.app-header { text-align: center; }
+
+.brand {
+  display: block;
+  font-size: clamp(2.4rem, 6vw, 3.8rem);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  /* Chrome gradient text */
+  background: linear-gradient(135deg, var(--clr-accent-cyan) 0%, var(--clr-accent-blue) 60%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brand-sub {
+  font-size: var(--fs-sm);
+  color: var(--clr-text-lo);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-top: .25rem;
+}
+
+/* ── 6. GLASSMORPHISM CARD BASE ──────────────────────────────── */
+/*
+  Core glassmorphism recipe:
+  - Semi-transparent background (rgba white at low opacity)
+  - backdrop-filter: blur — creates the frosted-glass effect by
+    blurring whatever is rendered behind this element
+  - backdrop-filter: saturate — boosts colours of blurred content
+  - Thin rgba(white) border for the glass "edge" highlight
+  - A deep box-shadow for lift/depth
+*/
+.glass-card {
+  background:       var(--clr-surface);
+  backdrop-filter:  blur(var(--glass-blur)) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border:           1px solid var(--clr-border);
+  border-radius:    var(--glass-radius);
+  box-shadow:       var(--glass-shadow);
+  /* Subtle top-highlight to mimic refracted light */
+  position: relative;
+  overflow: hidden;
+}
+/* Inner highlight stripe (top edge light) */
+.glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(160deg, rgba(255,255,255,.07) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* ── 7. SEARCH ───────────────────────────────────────────────── */
+.search-section { display: flex; flex-direction: column; gap: var(--gap-sm); }
+
+.search-glass {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  /* Glass applied directly to the search row */
+  background:      rgba(255,255,255,0.06);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border:          1px solid var(--clr-border);
+  border-radius:   3rem;
+  padding:         .6rem .6rem .6rem 1.25rem;
+  transition:      border-color .25s, box-shadow .25s;
+}
+.search-glass:focus-within {
+  border-color: var(--clr-accent-blue);
+  box-shadow: 0 0 0 3px rgba(79,158,255,.18);
+}
+
+.search-icon {
+  width: 1.15rem; height: 1.15rem;
+  color: var(--clr-text-lo);
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--clr-text-hi);
+  font-size: var(--fs-base);
+  font-weight: 400;
+}
+.search-input::placeholder { color: var(--clr-text-lo); }
+
+.search-btn {
+  background: linear-gradient(135deg, var(--clr-accent-blue), var(--clr-accent-cyan));
+  color: #080b14;
+  border: none;
+  border-radius: 2rem;
+  padding: .55rem 1.4rem;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: .04em;
+  transition: opacity .2s, transform .15s;
+  flex-shrink: 0;
+}
+.search-btn:hover  { opacity: .88; transform: scale(1.04); }
+.search-btn:active { transform: scale(.97); }
+
+.error-msg {
+  color: var(--clr-accent-rose);
+  font-size: var(--fs-sm);
+  text-align: center;
+  min-height: 1.25rem;
+}
+
+/* ── 8. MAIN WEATHER CARD ────────────────────────────────────── */
+.weather-main {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
+  flex-wrap: wrap;
+}
+
+.main-left { flex: 1; min-width: 220px; }
+
+.city-name {
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  line-height: 1.1;
+}
+
+.weather-date {
+  font-size: var(--fs-sm);
+  color: var(--clr-text-lo);
+  margin-top: .3rem;
+}
+
+.temp-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--gap-md);
+  margin-top: var(--gap-md);
+  flex-wrap: wrap;
+}
+
+.temperature {
+  font-size: var(--fs-temp);
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: 1;
+  /* Gradient temperature text */
+  background: linear-gradient(135deg, #fff 30%, var(--clr-accent-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.condition-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .2rem;
+  padding-bottom: .5rem;
+}
+
+.weather-icon {
+  width: 56px; height: 56px;
+  /* Keep crisp on retina */
+  image-rendering: -webkit-optimize-contrast;
+  filter: drop-shadow(0 2px 8px rgba(0,230,255,.3));
+}
+
+.condition {
+  font-size: var(--fs-base);
+  color: var(--clr-text-lo);
+  text-transform: capitalize;
+}
+
+.feels-like {
+  font-size: var(--fs-sm);
+  color: var(--clr-text-lo);
+  margin-top: var(--gap-sm);
+}
+
+/* Decorative large emoji on the right */
+.main-right { flex-shrink: 0; }
+.deco-emoji {
+  font-size: clamp(4rem, 10vw, 7rem);
+  line-height: 1;
+  filter: drop-shadow(0 0 30px rgba(255,255,255,.15));
+  animation: floatEmoji 4s ease-in-out infinite;
+}
+
+@keyframes floatEmoji {
+  0%, 100% { transform: translateY(0);    }
+  50%       { transform: translateY(-12px); }
+}
+
+/* ── 9. METRICS GRID ─────────────────────────────────────────── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--gap-md);
+}
+
+.metric-card {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  transition: transform .25s, box-shadow .25s;
+}
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+/* Coloured icon bubbles */
+.metric-icon-wrap {
+  width: 46px; height: 46px;
+  border-radius: .85rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.metric-icon-wrap svg { width: 20px; height: 20px; }
+
+.metric-icon--blue  { background: rgba(79,158,255,.18); color: var(--clr-accent-blue);  }
+.metric-icon--green { background: rgba(79,255,176,.18); color: var(--clr-accent-green); }
+.metric-icon--amber { background: rgba(255,204, 0,.18); color: var(--clr-accent-amber); }
+
+.metric-body  { display: flex; flex-direction: column; gap: .2rem; }
+.metric-label { font-size: var(--fs-xs); color: var(--clr-text-lo); letter-spacing: .1em; text-transform: uppercase; }
+.metric-value { font-size: var(--fs-2xl); font-weight: 800; letter-spacing: -.03em; }
+
+/* Animated fill bar */
+.fill-bar-track {
+  height: 4px;
+  background: rgba(255,255,255,.08);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.fill-bar {
+  height: 100%;
+  border-radius: 99px;
+  width: 0%;
+  transition: width 1.2s cubic-bezier(.22,1,.36,1);
+}
+.fill-bar--blue  { background: linear-gradient(90deg, #1a4fff, var(--clr-accent-cyan)); }
+.fill-bar--green { background: linear-gradient(90deg, #00b86b, var(--clr-accent-green)); }
+.fill-bar--amber { background: linear-gradient(90deg, #ff8c00, var(--clr-accent-amber)); }
+
+/* ── 10. LOADER ──────────────────────────────────────────────── */
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+.spinner {
+  width: 40px; height: 40px;
+  border: 3px solid rgba(255,255,255,.08);
+  border-top-color: var(--clr-accent-cyan);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── 11. FOOTER ──────────────────────────────────────────────── */
+.app-footer {
+  text-align: center;
+  font-size: var(--fs-xs);
+  color: var(--clr-text-lo);
+  letter-spacing: .05em;
+  padding-top: var(--gap-sm);
+}
+
+/* ── 12. ENTRANCE ANIMATIONS ─────────────────────────────────── */
+/*
+  fade-in  : simple opacity reveal for static elements
+  slide-up : cards rise from slightly below while fading in
+  Both use CSS @keyframes and animation-delay for staggered entrance.
+*/
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.fade-in {
+  animation: fadeIn .7s ease both;
+}
+
+.slide-up {
+  /* The base class; JS removes hidden then this triggers */
+  animation: slideUp .65s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* Staggered delays already set via inline style on metric cards */
+
+/* ── 13. UTILITY: hidden ─────────────────────────────────────── */
+[hidden] { display: none !important; }
+
+/* ── 14. RESPONSIVE TWEAKS ───────────────────────────────────── */
+@media (max-width: 480px) {
+  .weather-main { flex-direction: column; }
+  .main-right   { display: none; }          /* hide emoji on tiny screens */
+  .metrics-grid { grid-template-columns: 1fr; }
+}
